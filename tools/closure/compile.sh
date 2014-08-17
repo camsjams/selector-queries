@@ -1,1 +1,0 @@
-java -jar compiler.jar --js ../../src/responsive-containers.js --js_output_file ../../responsive-containers.min.js

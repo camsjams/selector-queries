@@ -26,6 +26,7 @@ THE SOFTWARE.
 	var doc = win.document,
 		els = [],
 		check_data_attributes = true,
+		clearAfterInit = true,
 		loaded = false;
 
 	function add(elements, query, value, class_name) {
@@ -50,7 +51,7 @@ THE SOFTWARE.
 			// Find data-squery attributes.
 			var nodes = [];
 			if (doc.querySelectorAll) {
-				var nodes = doc.querySelectorAll("[data-squery]");
+				nodes = doc.querySelectorAll("[data-squery]");
 			} else {
 				// If no query selectors.
 				var e = doc.getElementsByTagName("*");
@@ -62,9 +63,13 @@ THE SOFTWARE.
 			}
 			// Parse the data-squery attribute and store resulting rules on the element.
 			for (var i = 0, j = nodes.length; i < j; ++i) {
-				var el = nodes[i];
-				var cq_rules = [];
-				var raw_rules = el.getAttribute("data-squery").split(" ");
+				var el = nodes[i],
+					cq_rules = [],
+					raw_rules = el.getAttribute("data-squery").split(" ");
+				// clear attr
+				if(clearAfterInit) {
+					el.removeAttribute("data-squery"); 
+				}
 				for (var k = 0, l = raw_rules.length; k < l; ++k) {
 					var rule = /(.*):([0-9]*)(px|em)=(.*)/.exec(raw_rules[k]);
 					if (rule) {
