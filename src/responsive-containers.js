@@ -99,8 +99,8 @@ THE SOFTWARE.
 				if (rule[1] === "between") {
 					className = rule[6];
 					width = {
-						'wMin': parseInt(rule[2]),
-						'wMax': parseInt(rule[4])
+						'wMin': rule[3] === "em" ? emsToPixels(parseFloat(rule[2]), el) : parseInt(rule[2]),
+						'wMax': rule[5] === "em" ? emsToPixels(parseFloat(rule[4]), el) : parseInt(rule[4])
 					};
 				}
 
