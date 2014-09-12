@@ -20,15 +20,19 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-
+var sQuery = sQuery || {};
 (function (win) {
 
 	var doc = win.document,
 		els = [],
-		check_data_attributes = true,
+		checkDataAttributes = true,
 		clearAfterInit = true,
-		loaded = false;
-
+		loaded = false,
+		// private functions
+		getDefaultWidth,
+		compareFunction,
+		emsToPixels;
+	
 	function add(elements, query, value, class_name) {
 		var split_value = /([0-9]*)(px|em)/.exec(value);
 		for (var i = 0, j = elements.length; i < j; ++i) {
@@ -43,11 +47,11 @@ THE SOFTWARE.
 	}
 
 	function ignoreDataAttributes() {
-		check_data_attributes = false;
+		checkDataAttributes = false;
 	}
 
 	function findContainerQueries() {
-		if (check_data_attributes) {
+		if (checkDataAttributes) {
 			// Find data-squery attributes.
 			var nodes = [];
 			if (doc.querySelectorAll) {
@@ -125,20 +129,8 @@ THE SOFTWARE.
 		}
 	}
 
-	var compareFunction = {
-		"min-width": function (a, b) {
-			return a > b;
-		},
-		"max-width": function (a, b) {
-			return a < b;
-		},
-		"between": function (a, obj) {
-			return a > obj.wMin && a < obj.wMax;
-		}
-	};
-
-	function contentReady() {
-		if (loaded) {
+	function contentReady(force) {
+		if (loaded && !force) {
 			return;
 		}
 		loaded = true;
@@ -165,8 +157,20 @@ THE SOFTWARE.
 			return (args in f.memoize) ? f.memoize[args] : f.memoize[args] = f.apply(this, args);
 		};
 	}
-
-	var emsToPixels = memoize(function (em, scope) {
+	
+	compareFunction = {
+		"min-width": function (a, b) {
+			return a > b;
+		},
+		"max-width": function (a, b) {
+			return a < b;
+		},
+		"between": function (a, obj) {
+			return a > obj.wMin && a < obj.wMax;
+		}
+	};
+	
+	emsToPixels = memoize(function (em, scope) {
 		var test = doc.createElement("div");
 		test.style.fontSize = "1em";
 		test.style.margin = "0";
@@ -179,7 +183,7 @@ THE SOFTWARE.
 		return Math.round(val * em);
 	});
 
-	var getDefaultWidth = function (el, class_name) {
+	getDefaultWidth = function (el, class_name) {
 		var test = el.cloneNode(true);
 		test.className = (" " + test.className + " ").replace(" " + class_name + " ", " ");
 		test.style.height = 0;
@@ -191,7 +195,7 @@ THE SOFTWARE.
 		var val = test.offsetWidth;
 		parent.removeChild(test);
 		return val;
-	}
+	};
 
 	if (doc.addEventListener) {
 		doc.addEventListener("DOMContentLoaded", contentReady, false);
@@ -205,10 +209,9 @@ THE SOFTWARE.
 		win.attachEvent("onload", contentReady);
 	}
 
-
-	win["SelectorQueries"] = {
-		"add": add,
-		"ignoreDataAttributes": ignoreDataAttributes
-	}
-
+	// allow for post page load calls
+	sQuery.contentReady = contentReady;
+	sQuery.triggerResize = applyRules;
+	sQuery.ignoreDataAttributes = ignoreDataAttributes;
+	sQuery.add = add;
 })(this);
